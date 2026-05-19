@@ -75,7 +75,7 @@ const AdaptiveCursor = () => {
         backgroundColor: style.background,
         boxShadow: style.shadow,
         backdropFilter: style.blur || 'blur(10px)',
-        webkitBackdropFilter: style.blur || 'blur(10px)',
+        WebkitBackdropFilter: style.blur || 'blur(10px)',
         duration: 0.28,
         ease: 'power3.out',
       });

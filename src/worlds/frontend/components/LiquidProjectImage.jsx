@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { Canvas, createPortal, useFrame, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 import { getLiquidProjectTexture, loadLiquidProjectTexture } from './liquidProjectTexture';
@@ -118,6 +118,27 @@ const createRenderTarget = () => (
     stencilBuffer: false,
   })
 );
+
+let webglSupportCache;
+
+const canCreateWebGLContext = () => {
+  if (typeof window === 'undefined' || typeof document === 'undefined') return false;
+  if (typeof webglSupportCache === 'boolean') return webglSupportCache;
+
+  try {
+    const canvas = document.createElement('canvas');
+    const gl = canvas.getContext('webgl2') || canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+    webglSupportCache = Boolean(gl);
+
+    if (gl) {
+      gl.getExtension('WEBGL_lose_context')?.loseContext();
+    }
+  } catch {
+    webglSupportCache = false;
+  }
+
+  return webglSupportCache;
+};
 
 const useTextureImage = (src) => {
   const [loadState, setLoadState] = useState(() => ({
@@ -315,11 +336,66 @@ const LiquidProjectImage = ({
   isInteractive = true,
   effectEnabled = true,
 }) => {
+  const maskId = useId().replace(/:/g, '');
   const [webglState, setWebglState] = useState({ src: null, contextLost: false, shaderReady: false });
+  const [webglAvailable, setWebglAvailable] = useState(() => canCreateWebGLContext());
   const contextLost = webglState.src === src && webglState.contextLost;
   const shaderReady = webglState.src === src && webglState.shaderReady;
 
-  if (!isInteractive || contextLost) {
+  useEffect(() => {
+    setWebglAvailable(canCreateWebGLContext());
+  }, []);
+
+  const renderCssLiquidFallback = () => (
+    <div
+      className={`liquid-project-image liquid-project-image--css-fallback ${className}`}
+      style={{
+        '--liquid-mask': `url(#${maskId})`,
+      }}
+    >
+      <svg className="liquid-fallback-filter" aria-hidden="true" focusable="false">
+        <filter id={maskId}>
+          <feTurbulence
+            type="fractalNoise"
+            baseFrequency="0.012 0.035"
+            numOctaves="2"
+            seed="8"
+            result="noise"
+          />
+          <feDisplacementMap in="SourceGraphic" in2="noise" scale="18" xChannelSelector="R" yChannelSelector="G" />
+        </filter>
+      </svg>
+      <img
+        src={src}
+        alt={alt}
+        className="liquid-fallback-base"
+        loading="eager"
+        decoding="async"
+        draggable={false}
+      />
+      <img
+        src={src}
+        alt=""
+        aria-hidden="true"
+        className="liquid-fallback-layer liquid-fallback-layer--one"
+        loading="eager"
+        decoding="async"
+        draggable={false}
+      />
+      <img
+        src={src}
+        alt=""
+        aria-hidden="true"
+        className="liquid-fallback-layer liquid-fallback-layer--two"
+        loading="eager"
+        decoding="async"
+        draggable={false}
+      />
+      <span className="liquid-fallback-shine" aria-hidden="true" />
+    </div>
+  );
+
+  if (!isInteractive) {
     return (
       <img
         src={src}
@@ -329,6 +405,10 @@ const LiquidProjectImage = ({
         draggable={false}
       />
     );
+  }
+
+  if (!webglAvailable || contextLost) {
+    return renderCssLiquidFallback();
   }
 
   return (
