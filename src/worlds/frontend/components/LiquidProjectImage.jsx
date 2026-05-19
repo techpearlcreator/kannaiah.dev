@@ -1,7 +1,6 @@
-import { useEffect, useId, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Canvas, createPortal, useFrame, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
-import { getLiquidProjectTexture, loadLiquidProjectTexture } from './liquidProjectTexture';
 
 const passVertexShader = `
   varying vec2 vUv;
@@ -48,11 +47,17 @@ const simulationFragmentShader = `
 const imageVertexShader = `
   precision mediump float;
 
+  uniform float uVelo;
   varying vec2 vUv;
 
+  #define M_PI 3.1415926535897932384626433832795
+
   void main() {
+    vec3 pos = position;
+    pos.y += sin(uv.x * M_PI) * uVelo * 0.13;
+
     vUv = uv;
-    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
   }
 `;
 
@@ -119,59 +124,45 @@ const createRenderTarget = () => (
   })
 );
 
-let webglSupportCache;
-
-const canCreateWebGLContext = () => {
-  if (typeof window === 'undefined' || typeof document === 'undefined') return false;
-  if (typeof webglSupportCache === 'boolean') return webglSupportCache;
-
-  try {
-    const canvas = document.createElement('canvas');
-    const gl = canvas.getContext('webgl2') || canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
-    webglSupportCache = Boolean(gl);
-
-    if (gl) {
-      gl.getExtension('WEBGL_lose_context')?.loseContext();
-    }
-  } catch {
-    webglSupportCache = false;
-  }
-
-  return webglSupportCache;
-};
-
 const useTextureImage = (src) => {
-  const [loadState, setLoadState] = useState(() => ({
-    src,
-    texture: getLiquidProjectTexture(src),
-    failed: false,
-  }));
+  const [texture, setTexture] = useState(null);
 
   useEffect(() => {
-    const cachedTexture = getLiquidProjectTexture(src);
-    if (cachedTexture) return undefined;
+    let active = true;
+    const loader = new THREE.TextureLoader();
+    loader.setCrossOrigin('anonymous');
 
-    return loadLiquidProjectTexture(
-      src,
-      (texture) => setLoadState({ src, texture, failed: false }),
-      () => setLoadState({ src, texture: null, failed: true }),
-    );
+    loader.load(src, (loadedTexture) => {
+      if (!active) {
+        loadedTexture.dispose();
+        return;
+      }
+
+      loadedTexture.minFilter = THREE.LinearFilter;
+      loadedTexture.magFilter = THREE.LinearFilter;
+      loadedTexture.generateMipmaps = false;
+      loadedTexture.colorSpace = THREE.SRGBColorSpace;
+      loadedTexture.needsUpdate = true;
+      setTexture(loadedTexture);
+    });
+
+    return () => {
+      active = false;
+    };
   }, [src]);
 
-  return loadState.src === src
-    ? { texture: loadState.texture, failed: loadState.failed }
-    : { texture: null, failed: false };
+  return texture;
 };
 
-const FromAnotherPlane = ({ src, enabled, onReady, onFail }) => {
+const FromAnotherPlane = ({ src }) => {
   const meshRef = useRef(null);
   const imageMaterialRef = useRef(null);
   const simMaterialRef = useRef(null);
-  const textureReadyRef = useRef(false);
   const mouseRef = useRef(new THREE.Vector2(-10, -10));
   const previousUvRef = useRef(new THREE.Vector2(0.5, 0.5));
   const isMouseOnMeshRef = useRef(false);
-  const { texture, failed } = useTextureImage(src);
+  const scrollRef = useRef({ y: 0, targetVelocity: 0, velocity: 0 });
+  const texture = useTextureImage(src);
   const { gl, camera, raycaster, viewport } = useThree();
 
   const simulationScene = useMemo(() => new THREE.Scene(), []);
@@ -194,6 +185,7 @@ const FromAnotherPlane = ({ src, enabled, onReady, onFail }) => {
     uDisplacementMap: { value: renderTargetA.texture },
     uMeshSize: { value: new THREE.Vector2(1, 1) },
     uImageSize: { value: new THREE.Vector2(1, 1) },
+    uVelo: { value: 0 },
     uScale: { value: 1 },
     uDistortionStrength: { value: 0.16 },
   }), [renderTargetA]);
@@ -203,18 +195,23 @@ const FromAnotherPlane = ({ src, enabled, onReady, onFail }) => {
       mouseRef.current.set(event.clientX, event.clientY);
     };
 
+    const handleScroll = () => {
+      const y = window.scrollY || 0;
+      const delta = y - scrollRef.current.y;
+      scrollRef.current.y = y;
+      scrollRef.current.targetVelocity = THREE.MathUtils.clamp(delta * 0.035, -1.25, 1.25);
+    };
+
     window.addEventListener('mousemove', handleMouseMove, { passive: true });
+    window.addEventListener('scroll', handleScroll, { passive: true });
 
     return () => {
       window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('scroll', handleScroll);
     };
   }, []);
 
   useEffect(() => {
-    if (failed) onFail();
-  }, [failed, onFail]);
-
-  const applyTextureToMaterial = () => {
     if (!texture || !imageMaterialRef.current) return;
     const uniforms = imageMaterialRef.current.uniforms;
     uniforms.uTexture.value = texture;
@@ -223,19 +220,6 @@ const FromAnotherPlane = ({ src, enabled, onReady, onFail }) => {
     } else if (texture.image?.width && texture.image?.height) {
       uniforms.uImageSize.value.set(texture.image.width, texture.image.height);
     }
-
-    if (!textureReadyRef.current) {
-      textureReadyRef.current = true;
-      onReady();
-    }
-  };
-
-  useEffect(() => {
-    textureReadyRef.current = false;
-  }, [src]);
-
-  useEffect(() => {
-    applyTextureToMaterial();
   }, [texture]);
 
   useEffect(() => () => {
@@ -245,7 +229,6 @@ const FromAnotherPlane = ({ src, enabled, onReady, onFail }) => {
 
   useFrame(() => {
     if (!texture || !meshRef.current || !imageMaterialRef.current || !simMaterialRef.current) return;
-    applyTextureToMaterial();
 
     const previousRenderTarget = gl.getRenderTarget();
     if (!targetsInitializedRef.current) {
@@ -267,7 +250,7 @@ const FromAnotherPlane = ({ src, enabled, onReady, onFail }) => {
     raycaster.setFromCamera(normalizedMouse, camera);
     const hits = raycaster.intersectObject(mesh);
 
-    if (enabled && hits.length && hits[0].uv) {
+    if (hits.length && hits[0].uv) {
       const uv = hits[0].uv;
       const currentUv = new THREE.Vector2(uv.x, uv.y);
       const velocity = isMouseOnMeshRef.current
@@ -293,6 +276,10 @@ const FromAnotherPlane = ({ src, enabled, onReady, onFail }) => {
 
     imageMaterialRef.current.uniforms.uDisplacementMap.value = writeTarget.texture;
     imageMaterialRef.current.uniforms.uMeshSize.value.set(viewport.width, viewport.height);
+
+    scrollRef.current.velocity += (scrollRef.current.targetVelocity - scrollRef.current.velocity) * 0.12;
+    scrollRef.current.targetVelocity *= 0.88;
+    imageMaterialRef.current.uniforms.uVelo.value = scrollRef.current.velocity;
 
     currentTargetRef.current = readTarget;
   });
@@ -329,73 +316,10 @@ const FromAnotherPlane = ({ src, enabled, onReady, onFail }) => {
   );
 };
 
-const LiquidProjectImage = ({
-  src,
-  alt = 'Project Image',
-  className = '',
-  isInteractive = true,
-  effectEnabled = true,
-}) => {
-  const maskId = useId().replace(/:/g, '');
-  const [webglState, setWebglState] = useState({ src: null, contextLost: false, shaderReady: false });
-  const [webglAvailable, setWebglAvailable] = useState(() => canCreateWebGLContext());
-  const contextLost = webglState.src === src && webglState.contextLost;
-  const shaderReady = webglState.src === src && webglState.shaderReady;
+const LiquidProjectImage = ({ src, alt = 'Project Image', className = '', isInteractive = true }) => {
+  const [contextLost, setContextLost] = useState(false);
 
-  useEffect(() => {
-    setWebglAvailable(canCreateWebGLContext());
-  }, []);
-
-  const renderCssLiquidFallback = () => (
-    <div
-      className={`liquid-project-image liquid-project-image--css-fallback ${className}`}
-      style={{
-        '--liquid-mask': `url(#${maskId})`,
-      }}
-    >
-      <svg className="liquid-fallback-filter" aria-hidden="true" focusable="false">
-        <filter id={maskId}>
-          <feTurbulence
-            type="fractalNoise"
-            baseFrequency="0.012 0.035"
-            numOctaves="2"
-            seed="8"
-            result="noise"
-          />
-          <feDisplacementMap in="SourceGraphic" in2="noise" scale="18" xChannelSelector="R" yChannelSelector="G" />
-        </filter>
-      </svg>
-      <img
-        src={src}
-        alt={alt}
-        className="liquid-fallback-base"
-        loading="eager"
-        decoding="async"
-        draggable={false}
-      />
-      <img
-        src={src}
-        alt=""
-        aria-hidden="true"
-        className="liquid-fallback-layer liquid-fallback-layer--one"
-        loading="eager"
-        decoding="async"
-        draggable={false}
-      />
-      <img
-        src={src}
-        alt=""
-        aria-hidden="true"
-        className="liquid-fallback-layer liquid-fallback-layer--two"
-        loading="eager"
-        decoding="async"
-        draggable={false}
-      />
-      <span className="liquid-fallback-shine" aria-hidden="true" />
-    </div>
-  );
-
-  if (!isInteractive) {
+  if (!isInteractive || contextLost) {
     return (
       <img
         src={src}
@@ -405,10 +329,6 @@ const LiquidProjectImage = ({
         draggable={false}
       />
     );
-  }
-
-  if (!webglAvailable || contextLost) {
-    return renderCssLiquidFallback();
   }
 
   return (
@@ -427,8 +347,7 @@ const LiquidProjectImage = ({
         src={src}
         alt={alt}
         className="absolute inset-0 h-full w-full object-cover"
-        loading="eager"
-        decoding="async"
+        loading="lazy"
         draggable={false}
       />
       <Canvas
@@ -436,28 +355,11 @@ const LiquidProjectImage = ({
         camera={{ position: [0, 0, 1], fov: 50 }}
         gl={{ antialias: true, alpha: true, powerPreference: 'high-performance' }}
         onCreated={({ gl }) => {
-          gl.domElement.addEventListener(
-            'webglcontextlost',
-            () => setWebglState({ src, contextLost: true, shaderReady: false }),
-            { once: true },
-          );
+          gl.domElement.addEventListener('webglcontextlost', () => setContextLost(true), { once: true });
         }}
-        style={{
-          position: 'absolute',
-          inset: 0,
-          width: '100%',
-          height: '100%',
-          display: 'block',
-          opacity: shaderReady ? 1 : 0,
-          pointerEvents: 'none',
-        }}
+        style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', display: 'block' }}
       >
-        <FromAnotherPlane
-          src={src}
-          enabled={effectEnabled}
-          onReady={() => setWebglState({ src, contextLost: false, shaderReady: true })}
-          onFail={() => setWebglState({ src, contextLost: true, shaderReady: false })}
-        />
+        <FromAnotherPlane src={src} />
       </Canvas>
     </div>
   );
