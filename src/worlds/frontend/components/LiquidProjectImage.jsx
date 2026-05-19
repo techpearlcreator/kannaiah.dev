@@ -146,6 +146,7 @@ const FromAnotherPlane = ({ src, enabled, onReady, onFail }) => {
   const meshRef = useRef(null);
   const imageMaterialRef = useRef(null);
   const simMaterialRef = useRef(null);
+  const textureReadyRef = useRef(false);
   const mouseRef = useRef(new THREE.Vector2(-10, -10));
   const previousUvRef = useRef(new THREE.Vector2(0.5, 0.5));
   const isMouseOnMeshRef = useRef(false);
@@ -192,7 +193,7 @@ const FromAnotherPlane = ({ src, enabled, onReady, onFail }) => {
     if (failed) onFail();
   }, [failed, onFail]);
 
-  useEffect(() => {
+  const applyTextureToMaterial = () => {
     if (!texture || !imageMaterialRef.current) return;
     const uniforms = imageMaterialRef.current.uniforms;
     uniforms.uTexture.value = texture;
@@ -201,8 +202,20 @@ const FromAnotherPlane = ({ src, enabled, onReady, onFail }) => {
     } else if (texture.image?.width && texture.image?.height) {
       uniforms.uImageSize.value.set(texture.image.width, texture.image.height);
     }
-    onReady();
-  }, [onReady, texture]);
+
+    if (!textureReadyRef.current) {
+      textureReadyRef.current = true;
+      onReady();
+    }
+  };
+
+  useEffect(() => {
+    textureReadyRef.current = false;
+  }, [src]);
+
+  useEffect(() => {
+    applyTextureToMaterial();
+  }, [texture]);
 
   useEffect(() => () => {
     renderTargetA.dispose();
@@ -211,6 +224,7 @@ const FromAnotherPlane = ({ src, enabled, onReady, onFail }) => {
 
   useFrame(() => {
     if (!texture || !meshRef.current || !imageMaterialRef.current || !simMaterialRef.current) return;
+    applyTextureToMaterial();
 
     const previousRenderTarget = gl.getRenderTarget();
     if (!targetsInitializedRef.current) {
