@@ -4,6 +4,10 @@
 
 :root {
   --bg-color: #E2DBF8;
+  --container-wide: min(100% - clamp(2rem, 6vw, 9rem), 1600px);
+  --container-content: min(100% - clamp(2rem, 6vw, 8rem), 1400px);
+  --section-padding-block: clamp(5rem, 8vw, 9rem);
+  --section-padding-inline: clamp(1.25rem, 4vw, 5rem);
 }
 
 html, body, #root {
@@ -114,6 +118,305 @@ body {
 
 .liquid-project-image {
   transform: translateZ(0);
+}
+
+.portfolio-logo {
+  font-size: clamp(1.1rem, 0.55vw + 0.95rem, 1.65rem);
+}
+
+.portfolio-nav {
+  font-size: clamp(0.68rem, 0.16vw + 0.62rem, 0.95rem);
+  letter-spacing: clamp(0.12em, 0.35vw, 0.24em);
+}
+
+.portfolio-header {
+  padding-inline: var(--section-padding-inline);
+}
+
+.portfolio-header-inner {
+  width: 100%;
+  max-width: 1700px;
+  margin-inline: auto;
+}
+
+.portfolio-hero {
+  min-height: 100svh;
+  padding: clamp(7rem, 12vh, 10rem) var(--section-padding-inline) clamp(5.5rem, 10vh, 8.5rem);
+}
+
+.portfolio-hero-title {
+  font-size: clamp(3.4rem, 8.5vw, 10.8rem);
+  max-width: min(94vw, 92rem);
+}
+
+.portfolio-hero-copy {
+  color: rgba(0, 0, 0, 0.72);
+  font-size: clamp(0.98rem, 0.42vw + 0.78rem, 1.45rem);
+  line-height: 1.68;
+  max-width: min(90vw, 64rem);
+}
+
+.portfolio-socials {
+  gap: clamp(1rem, 1.3vw, 1.5rem);
+}
+
+.portfolio-social-link {
+  width: clamp(3rem, 3.1vw, 4.5rem);
+  height: clamp(3rem, 3.1vw, 4.5rem);
+}
+
+.portfolio-social-link svg {
+  width: clamp(1.65rem, 1.55vw, 2.55rem);
+  height: clamp(1.65rem, 1.55vw, 2.55rem);
+}
+
+.portfolio-scroll-cue {
+  bottom: clamp(1.25rem, 3vh, 2.2rem);
+  opacity: 0.45;
+}
+
+@media (min-width: 1200px) and (max-height: 900px) {
+  .portfolio-hero-title {
+    font-size: clamp(5rem, 7vw, 6.7rem);
+  }
+
+  .portfolio-hero-copy {
+    font-size: 1rem;
+    max-width: 44rem;
+  }
+}
+
+.project-card {
+  background: #fcfaf7;
+}
+
+.project-card--desktop {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-inline: var(--section-padding-inline);
+}
+
+.project-card--mobile {
+  padding: clamp(4.5rem, 15vw, 7rem) var(--section-padding-inline);
+}
+
+.project-card__inner {
+  width: 100%;
+}
+
+.project-card__inner--desktop {
+  max-width: 1600px;
+  display: grid;
+  grid-template-columns:
+    minmax(16rem, 0.92fr)
+    minmax(24rem, 1.16fr)
+    minmax(18rem, 0.92fr);
+  align-items: center;
+  gap: clamp(2rem, 5vw, 6rem);
+}
+
+.project-card__inner--mobile {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(2.5rem, 10vw, 4rem);
+}
+
+.project-card__title,
+.project-card__info {
+  width: min(100%, 34rem);
+}
+
+.project-card__title-text {
+  font-size: clamp(3.2rem, 7.5vw, 9.4rem);
+}
+
+.project-card__media {
+  width: min(100%, 34rem);
+  margin-inline: auto;
+  aspect-ratio: 4 / 5;
+}
+
+.project-card__copy {
+  max-width: 36rem;
+  font-size: clamp(0.95rem, 0.42vw + 0.72rem, 1.35rem);
+  line-height: 1.72;
+}
+
+.project-card__cta {
+  font-size: clamp(0.68rem, 0.15vw + 0.62rem, 0.88rem);
+}
+
+.projects-progress {
+  left: clamp(1.5rem, 2.6vw, 4rem);
+}
+
+.skills-section {
+  min-height: 100svh;
+  padding: var(--section-padding-block) var(--section-padding-inline);
+}
+
+.skills-mobile-copy {
+  max-width: min(100%, 44rem);
+  font-size: clamp(0.95rem, 0.32vw + 0.78rem, 1.12rem);
+}
+
+.skills-mobile-grid {
+  max-width: 1100px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 10rem), 1fr));
+  gap: clamp(0.75rem, 1.8vw, 1.25rem);
+}
+
+.skills-mobile-card {
+  min-height: clamp(8rem, 15vw, 11rem);
+  padding: clamp(1rem, 3vw, 1.75rem);
+}
+
+.skills-branding {
+  max-width: min(54rem, 54vw);
+  padding-inline: clamp(1rem, 3vw, 2rem);
+}
+
+.skills-title {
+  font-size: clamp(3.1rem, 5.5vw, 7.25rem);
+}
+
+.skill-card {
+  width: var(--skill-size);
+  height: var(--skill-size);
+  font-size: var(--skill-font);
+}
+
+.skill-card--lg {
+  --skill-size: clamp(10.5rem, 10vw, 14rem);
+  --skill-font: clamp(1.15rem, 0.72vw + 0.9rem, 1.9rem);
+}
+
+.skill-card--md {
+  --skill-size: clamp(8.5rem, 8.3vw, 11.5rem);
+  --skill-font: clamp(0.98rem, 0.55vw + 0.78rem, 1.45rem);
+}
+
+.skill-card--sm {
+  --skill-size: clamp(7rem, 6.8vw, 9.5rem);
+  --skill-font: clamp(0.82rem, 0.4vw + 0.68rem, 1.12rem);
+}
+
+.skill-level {
+  font-size: clamp(0.56rem, 0.18vw + 0.5rem, 0.72rem);
+}
+
+.journey-section {
+  padding: var(--section-padding-block) var(--section-padding-inline);
+}
+
+.journey-container {
+  width: 100%;
+  max-width: 1500px;
+  margin-inline: auto;
+}
+
+.journey-heading {
+  max-width: 1280px;
+}
+
+.journey-title {
+  max-width: 1180px;
+  font-size: clamp(3.1rem, 6.6vw, 8.6rem);
+}
+
+.journey-copy {
+  max-width: 58rem;
+  font-size: clamp(1rem, 0.42vw + 0.82rem, 1.45rem);
+  line-height: 1.68;
+}
+
+.journey-list {
+  max-width: 1500px;
+}
+
+.timeline-shell {
+  padding: clamp(1.5rem, 2.2vw, 2.75rem);
+}
+
+.timeline-title {
+  font-size: clamp(1.55rem, 1.55vw + 1rem, 3.1rem);
+}
+
+.timeline-copy {
+  font-size: clamp(0.95rem, 0.38vw + 0.78rem, 1.28rem);
+  line-height: 1.7;
+}
+
+.contact-section {
+  padding: var(--section-padding-block) var(--section-padding-inline);
+}
+
+.contact-container {
+  max-width: 1400px;
+}
+
+.contact-intro {
+  max-width: 880px;
+}
+
+.contact-title {
+  font-size: clamp(2.7rem, 6.2vw, 7.8rem);
+}
+
+.contact-copy {
+  max-width: 58rem;
+  font-size: clamp(0.95rem, 0.4vw + 0.78rem, 1.28rem);
+  line-height: 1.7;
+}
+
+.contact-panel {
+  max-width: 980px;
+}
+
+.contact-capsule {
+  max-width: min(100%, 900px);
+  min-height: clamp(9rem, 11vw, 15rem);
+  padding: clamp(1.25rem, 3vw, 3.5rem);
+}
+
+.contact-form {
+  padding: clamp(1.25rem, 2.5vw, 2.75rem);
+}
+
+.contact-control {
+  min-height: clamp(3.25rem, 3vw, 4rem);
+  font-size: clamp(0.9rem, 0.22vw + 0.82rem, 1.08rem);
+}
+
+.contact-action {
+  font-size: clamp(0.68rem, 0.14vw + 0.62rem, 0.82rem);
+}
+
+@media (max-width: 640px) {
+  .portfolio-hero-title {
+    font-size: clamp(3rem, 15vw, 4.8rem);
+  }
+
+  .portfolio-hero-copy {
+    font-size: 0.95rem;
+    max-width: 22rem;
+  }
+}
+
+@media (min-width: 1800px) {
+  .project-card__inner--desktop {
+    max-width: 1700px;
+    grid-template-columns:
+      minmax(19rem, 0.95fr)
+      minmax(28rem, 1.2fr)
+      minmax(20rem, 0.95fr);
+  }
+
+  .project-card__media {
+    width: min(100%, 38rem);
+  }
 }
 
 @media (hover: hover) and (pointer: fine) {

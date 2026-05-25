@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Check, Mail, MessageSquareText, Sparkles } from 'lucide-react';
 import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import emailjs from '@emailjs/browser';
 import { GitHubIcon, GmailIcon, LinkedInIcon } from './SocialIcons';
 
@@ -52,7 +53,16 @@ const ContactCommandCenter = () => {
       );
     }, formRef);
 
-    return () => ctx.revert();
+    const refreshTimer = window.setTimeout(() => {
+      ScrollTrigger.refresh();
+      window.dispatchEvent(new Event('resize'));
+      formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 80);
+
+    return () => {
+      window.clearTimeout(refreshTimer);
+      ctx.revert();
+    };
   }, [view]);
 
   useEffect(() => {
@@ -128,23 +138,29 @@ const ContactCommandCenter = () => {
       id="contact"
       data-cursor="light"
       data-cursor-type="contact"
-      className="relative min-h-screen overflow-x-hidden bg-[#05030a] px-5 py-24 text-white sm:px-8 md:px-12"
+      className="contact-section relative min-h-screen overflow-x-hidden bg-[#05030a] text-white"
     >
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_22%_20%,rgba(196,181,253,0.22),transparent_31%),radial-gradient(circle_at_78%_74%,rgba(20,184,166,0.14),transparent_32%),linear-gradient(180deg,#05030a_0%,#0b0714_100%)]" />
       <div className="pointer-events-none absolute inset-0 opacity-[0.08] [background-image:linear-gradient(rgba(196,181,253,0.22)_1px,transparent_1px),linear-gradient(90deg,rgba(196,181,253,0.22)_1px,transparent_1px)] [background-size:58px_58px]" />
 
-      <div className="relative z-10 mx-auto flex min-h-[calc(100vh-12rem)] w-full max-w-5xl flex-col items-center justify-center">
-        <div ref={introRef} className="mb-10 max-w-2xl text-center">
+      <div
+        className={`contact-container relative z-10 mx-auto flex w-full flex-col items-center ${
+          view === 'form'
+            ? 'min-h-0 justify-start'
+            : 'min-h-[calc(100vh-10rem)] justify-center sm:min-h-[calc(100vh-12rem)]'
+        }`}
+      >
+        <div ref={introRef} className={`contact-intro ${view === 'form' ? 'mb-7' : 'mb-10'} text-center`}>
           <p className="mb-4 text-[10px] font-black uppercase tracking-[0.42em] text-[#c4b5fd]">
             Contact capsule
           </p>
-          <h2 className="text-[clamp(2.7rem,7vw,5.9rem)] font-black uppercase leading-[0.9] tracking-tight">
+          <h2 className="contact-title font-black uppercase leading-[0.9] tracking-tight">
             Share Your Idea
           </h2>
-          <p className="mx-auto mt-5 max-w-xl text-sm leading-7 text-white/58 md:text-base">
+          <p className="contact-copy mx-auto mt-5 text-white/58">
             Tap the capsule, drop your details into a clean general form, and it folds back into a thank-you note after sending.
           </p>
-          <div className="mt-7 flex flex-wrap items-center justify-center gap-3">
+          <div className={`${view === 'form' ? 'mt-5' : 'mt-7'} flex flex-wrap items-center justify-center gap-3`}>
             {socialLinks.map(({ label, href, Icon }) => (
               <a
                 key={label}
@@ -162,14 +178,14 @@ const ContactCommandCenter = () => {
           </div>
         </div>
 
-        <div className="w-full max-w-3xl">
+        <div className="contact-panel w-full">
           {view === 'capsule' && (
             <button
               ref={capsuleRef}
               type="button"
               onClick={openForm}
               data-cursor-text="OPEN"
-              className="group relative mx-auto flex min-h-32 w-full max-w-[340px] items-center justify-between gap-4 overflow-hidden rounded-full border border-[#c4b5fd]/45 bg-[linear-gradient(90deg,#fff_0%,#f7f4ff_58%,#8b5cf6_58%,#6d28d9_100%)] px-5 py-5 text-left text-[#090512] shadow-[inset_0_18px_34px_rgba(255,255,255,0.82),inset_0_-22px_42px_rgba(76,29,149,0.18),0_24px_70px_rgba(0,0,0,0.46),0_0_60px_rgba(124,58,237,0.16)] transition duration-500 hover:-translate-y-1 hover:border-[#ddd6fe]/80 sm:min-h-44 sm:max-w-none sm:gap-6 sm:bg-[linear-gradient(90deg,#fff_0%,#f7f4ff_48%,#ede9fe_50%,#8b5cf6_50%,#6d28d9_100%)] sm:px-10 sm:py-6 md:min-h-52 md:px-14"
+              className="contact-capsule group relative mx-auto flex w-full items-center justify-between gap-4 overflow-hidden rounded-full border border-[#c4b5fd]/45 bg-[linear-gradient(90deg,#fff_0%,#f7f4ff_58%,#8b5cf6_58%,#6d28d9_100%)] text-left text-[#090512] shadow-[inset_0_18px_34px_rgba(255,255,255,0.82),inset_0_-22px_42px_rgba(76,29,149,0.18),0_24px_70px_rgba(0,0,0,0.46),0_0_60px_rgba(124,58,237,0.16)] transition duration-500 hover:-translate-y-1 hover:border-[#ddd6fe]/80 sm:gap-6 sm:bg-[linear-gradient(90deg,#fff_0%,#f7f4ff_48%,#ede9fe_50%,#8b5cf6_50%,#6d28d9_100%)]"
             >
               <span className="pointer-events-none absolute inset-x-[8%] top-5 h-8 rounded-full bg-white/55 blur-[1px]" />
               <span className="pointer-events-none absolute inset-x-[10%] bottom-4 h-10 rounded-full bg-[#4c1d95]/10 blur-md" />
@@ -197,15 +213,18 @@ const ContactCommandCenter = () => {
           {view === 'form' && (
             <form
               ref={formRef}
+              data-lenis-prevent
+              data-lenis-prevent-wheel
+              data-lenis-prevent-touch
               onSubmit={handleSubmit}
-              className="rounded-[2rem] border border-[#c4b5fd]/24 bg-[#090512]/95 p-5 shadow-[0_35px_100px_rgba(0,0,0,0.62),0_0_80px_rgba(124,58,237,0.14)] sm:p-7 md:p-9"
+              className="contact-form max-h-[calc(100dvh-2rem)] overflow-y-auto overscroll-contain rounded-[2rem] border border-[#c4b5fd]/24 bg-[#090512]/95 shadow-[0_35px_100px_rgba(0,0,0,0.62),0_0_80px_rgba(124,58,237,0.14)] [scrollbar-color:rgba(196,181,253,0.45)_rgba(255,255,255,0.06)] [scrollbar-width:thin] sm:max-h-[calc(100dvh-3rem)]"
             >
               <div className="mb-7 flex flex-col gap-4 border-b border-white/10 pb-6 md:flex-row md:items-center md:justify-between">
                 <div>
                   <p className="text-[10px] font-black uppercase tracking-[0.32em] text-[#c4b5fd]">
                     General form
                   </p>
-                  <h3 className="mt-2 text-2xl font-black tracking-tight text-white sm:text-3xl">
+                  <h3 className="mt-2 text-2xl font-black tracking-tight text-white sm:text-3xl md:text-4xl">
                     Tell me what you are planning.
                   </h3>
                 </div>
@@ -228,7 +247,7 @@ const ContactCommandCenter = () => {
                   value={formData.category}
                   onChange={handleChange}
                   disabled={isLoading}
-                  className="h-[52px] w-full rounded-xl border border-[#c4b5fd]/35 bg-[#f7f4ff] px-4 py-3.5 text-sm font-semibold text-[#080313] outline-none transition focus:border-[#7c3aed] focus:bg-white disabled:opacity-70"
+                  className="contact-control w-full rounded-xl border border-[#c4b5fd]/35 bg-[#f7f4ff] px-4 py-3.5 font-semibold text-[#080313] outline-none transition focus:border-[#7c3aed] focus:bg-white disabled:opacity-70"
                 >
                   {categories.map((category) => (
                     <option key={category} value={category}>
@@ -250,7 +269,7 @@ const ContactCommandCenter = () => {
                   required
                   rows={6}
                   placeholder="Share the idea, timeline, links, or anything useful..."
-                  className="min-h-40 w-full resize-none rounded-xl border border-[#c4b5fd]/35 bg-[#f7f4ff] px-4 py-4 text-sm leading-7 text-[#080313] outline-none transition placeholder:text-[#4c1d95]/45 focus:border-[#7c3aed] focus:bg-white disabled:opacity-70"
+                  className="contact-control min-h-40 w-full resize-none rounded-xl border border-[#c4b5fd]/35 bg-[#f7f4ff] px-4 py-4 leading-7 text-[#080313] outline-none transition placeholder:text-[#4c1d95]/45 focus:border-[#7c3aed] focus:bg-white disabled:opacity-70"
                 />
               </label>
 
@@ -259,7 +278,7 @@ const ContactCommandCenter = () => {
                   type="submit"
                   disabled={isLoading}
                   data-cursor-text="SEND"
-                  className="inline-flex min-h-14 flex-1 items-center justify-center rounded-full bg-[#7c3aed] px-7 py-4 text-[11px] font-black uppercase tracking-[0.26em] text-white shadow-[0_20px_55px_rgba(124,58,237,0.42)] transition hover:bg-[#8b5cf6] disabled:cursor-not-allowed disabled:opacity-70"
+                  className="contact-action inline-flex min-h-14 flex-1 items-center justify-center rounded-full bg-[#7c3aed] px-7 py-4 font-black uppercase tracking-[0.26em] text-white shadow-[0_20px_55px_rgba(124,58,237,0.42)] transition hover:bg-[#8b5cf6] disabled:cursor-not-allowed disabled:opacity-70"
                 >
                   {isLoading ? 'Sealing capsule...' : 'Send capsule'}
                 </button>
@@ -267,7 +286,7 @@ const ContactCommandCenter = () => {
                   type="button"
                   onClick={resetCapsule}
                   disabled={isLoading}
-                  className="inline-flex min-h-14 items-center justify-center rounded-full border border-white/12 px-7 py-4 text-[10px] font-black uppercase tracking-[0.22em] text-white/55 transition hover:border-white/28 hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
+                  className="contact-action inline-flex min-h-14 items-center justify-center rounded-full border border-white/12 px-7 py-4 font-black uppercase tracking-[0.22em] text-white/55 transition hover:border-white/28 hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   Close
                 </button>
@@ -320,7 +339,7 @@ const ContactField = ({ label, name, type = 'text', value, onChange, disabled, r
       disabled={disabled}
       required={required}
       placeholder={label}
-      className="h-[52px] w-full rounded-xl border border-[#c4b5fd]/35 bg-[#f7f4ff] px-4 py-3.5 text-sm text-[#080313] outline-none transition placeholder:text-[#4c1d95]/45 focus:border-[#7c3aed] focus:bg-white disabled:opacity-70"
+      className="contact-control w-full rounded-xl border border-[#c4b5fd]/35 bg-[#f7f4ff] px-4 py-3.5 text-[#080313] outline-none transition placeholder:text-[#4c1d95]/45 focus:border-[#7c3aed] focus:bg-white disabled:opacity-70"
     />
   </label>
 );

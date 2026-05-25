@@ -164,29 +164,29 @@ const FloatingJourneyCardCloud = () => {
     <section
       ref={sectionRef}
       id="journey-section"
-      className="relative overflow-hidden bg-[#f9fafb] px-6 py-28 md:px-12 md:py-36"
+      className="journey-section relative overflow-hidden bg-[#f9fafb]"
     >
       <div className="pointer-events-none absolute inset-x-0 top-32 select-none text-center text-[clamp(4.5rem,13vw,11rem)] font-black uppercase leading-[0.95] tracking-tight text-[#111827]/[0.035]">
         <span className="block">Developer</span>
         <span className="block">Journey</span>
       </div>
 
-      <div ref={titleRef} className="relative z-10 mx-auto mb-24 max-w-6xl text-center">
+      <div ref={titleRef} className="journey-heading relative z-10 mx-auto mb-24 text-center">
         <p className="mb-4 text-[10px] font-black uppercase tracking-[0.55em] text-[#111827]/25">
           How my journey started
         </p>
-        <h2 className="mx-auto flex max-w-5xl flex-wrap items-baseline justify-center gap-x-5 gap-y-1 text-[clamp(3.1rem,7vw,6.2rem)] font-black uppercase leading-[0.9] tracking-tight text-[#111827]">
+        <h2 className="journey-title mx-auto flex flex-wrap items-baseline justify-center gap-x-5 gap-y-1 font-black uppercase leading-[0.9] tracking-tight text-[#111827]">
           <span>Developer</span>
           <span className="font-serif font-normal italic normal-case text-[#7C3AED]">
             Journey
           </span>
         </h2>
-        <p className="mx-auto mt-7 max-w-2xl text-base leading-7 text-[#111827]/55 md:text-lg">
+        <p className="journey-copy mx-auto mt-7 text-[#111827]/55">
           This is not a resume. It is the story of how curiosity turned into practice, and how practice slowly became real project work.
         </p>
       </div>
 
-      <div className="relative z-10 mx-auto max-w-6xl">
+      <div className="journey-list relative z-10 mx-auto">
         <div className="absolute left-4 top-0 h-full w-px bg-[#111827]/10 md:left-1/2 md:-translate-x-1/2">
           <div
             ref={lineRef}
@@ -195,7 +195,7 @@ const FloatingJourneyCardCloud = () => {
           />
         </div>
 
-        <div className="flex flex-col gap-16 md:gap-24">
+        <div className="flex flex-col gap-16 md:gap-24 xl:gap-28">
           {stages.map((stage, index) => (
             <TimelineItem
               key={stage.phase}
@@ -218,11 +218,11 @@ const TimelineItem = ({ stage, index, refCallback }) => {
       ref={refCallback}
       data-cursor-type="skill"
       data-cursor-text={stage.cursor}
-      className={`relative grid gap-6 pl-12 md:grid-cols-2 md:items-start md:gap-16 md:pl-0 ${isLeft ? '' : ''}`}
+      className={`relative grid gap-6 pl-12 md:grid-cols-2 md:items-start md:gap-16 xl:gap-24 md:pl-0 ${isLeft ? '' : ''}`}
     >
       <div
         className={`
-          timeline-shell relative overflow-hidden rounded-2xl bg-white/70 p-6 shadow-[0_18px_55px_rgba(17,24,39,0.06)]
+          timeline-shell relative overflow-hidden rounded-2xl bg-white/70 shadow-[0_18px_55px_rgba(17,24,39,0.06)]
           backdrop-blur-xl transition-all duration-500 hover:-translate-y-1 hover:border-[#7C3AED]/35
           hover:shadow-[0_24px_70px_rgba(124,58,237,0.12)]
           ${isLeft ? 'md:col-start-1 md:text-right' : 'md:col-start-2 md:text-left'}
@@ -237,23 +237,23 @@ const TimelineItem = ({ stage, index, refCallback }) => {
           <span className="rounded-full bg-[#7C3AED]/10 px-3 py-1.5 text-[9px] font-black uppercase tracking-[0.3em] text-[#7C3AED]">
             LVL-0{index + 1}
           </span>
-          <span className="text-[10px] font-black uppercase tracking-[0.35em] text-[#111827]/35">
+          <span className="text-[10px] font-black uppercase tracking-[0.35em] text-[#111827]/35 md:text-xs">
             {stage.phase}
           </span>
         </div>
 
         <div className="timeline-content">
-          <h3 className="text-2xl font-black leading-tight tracking-tight text-[#111827] md:text-3xl">
+          <h3 className="timeline-title font-black leading-tight tracking-tight text-[#111827]">
             {stage.title}
           </h3>
-          <p className="mt-4 text-sm leading-7 text-[#111827]/58 md:text-base">
+          <p className="timeline-copy mt-4 text-[#111827]/58">
             {stage.body}
           </p>
           <div className={`mt-6 flex flex-wrap gap-2 ${isLeft ? 'md:justify-end' : ''}`}>
             {stage.tags.map((tag) => (
               <span
                 key={tag}
-                className="rounded-full border border-[#111827]/5 bg-[#111827]/[0.035] px-3 py-2 text-[10px] font-bold uppercase tracking-[0.18em] text-[#111827]/55"
+                className="rounded-full border border-[#111827]/5 bg-[#111827]/[0.035] px-3 py-2 text-[10px] font-bold uppercase tracking-[0.18em] text-[#111827]/55 md:text-xs"
               >
                 {tag}
               </span>

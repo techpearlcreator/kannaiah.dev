@@ -23,9 +23,9 @@ const skillData = [
 ];
 
 const sizeMap = {
-  lg: 'w-36 h-36 md:w-44 md:h-44 text-lg md:text-2xl',
-  md: 'h-[7.5rem] w-[7.5rem] md:w-36 md:h-36 text-sm md:text-lg',
-  sm: 'w-24 h-24 md:w-28 md:h-28 text-xs md:text-sm',
+  lg: 'skill-card skill-card--lg',
+  md: 'skill-card skill-card--md',
+  sm: 'skill-card skill-card--sm',
 };
 
 const FloatingGlassSkillsSection = () => {
@@ -129,7 +129,7 @@ const FloatingGlassSkillsSection = () => {
 
   if (isMobile) {
     return (
-      <section className="relative flex w-full flex-col items-center bg-[#fdfaf5] px-5 py-20 sm:px-8 sm:py-24">
+      <section className="skills-section relative flex w-full flex-col items-center bg-[#fdfaf5]">
         <div className="mb-12 text-center sm:mb-16">
           <p className="mb-4 text-[10px] font-bold uppercase tracking-[0.32em] text-black/20 sm:tracking-[0.6em]">
             Vibe Code Toolkit
@@ -141,14 +141,14 @@ const FloatingGlassSkillsSection = () => {
               DEVELOPER
             </span>
           </h1>
-          <p className="mx-auto max-w-sm text-sm leading-6 opacity-60">
+          <p className="skills-mobile-copy mx-auto leading-7 opacity-60">
             These are the tools I use with AI while building projects. I am still improving my manual coding knowledge, but I understand how to guide, edit, and shape AI-generated code into working experiences.
           </p>
         </div>
 
-        <div className="grid w-full max-w-4xl grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3">
+        <div className="skills-mobile-grid w-full">
           {skillData.map((skill) => (
-            <div key={skill.name} className="flex min-h-32 flex-col items-center justify-center rounded-2xl border border-black/5 bg-white px-3 py-5 text-center shadow-sm sm:min-h-36">
+            <div key={skill.name} className="skills-mobile-card flex flex-col items-center justify-center rounded-2xl border border-black/5 bg-white text-center shadow-sm">
               <span className="mb-2 text-sm font-bold leading-tight text-black/70 sm:text-base">{skill.name}</span>
               <span className="max-w-full rounded-full bg-black/5 px-2 py-1 text-[8px] uppercase leading-none tracking-[0.14em] text-black/50 sm:tracking-[0.2em]">{skill.level}</span>
             </div>
@@ -161,7 +161,7 @@ const FloatingGlassSkillsSection = () => {
   return (
     <section
       ref={containerRef}
-      className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#fdfaf5]"
+      className="skills-section relative flex min-h-screen items-center justify-center overflow-hidden bg-[#fdfaf5]"
       style={{ isolation: 'isolate' }}
     >
       <div
@@ -175,22 +175,22 @@ const FloatingGlassSkillsSection = () => {
 
       <div
         ref={brandingRef}
-        className="pointer-events-none relative z-20 max-w-2xl select-none px-8 text-center"
+        className="skills-branding pointer-events-none relative z-20 select-none text-center"
       >
         <p className="mb-8 text-[10px] font-bold uppercase tracking-[0.6em] text-black/20">
           Vibe Code Toolkit
         </p>
-        <h1 className="mb-5 text-[clamp(2.75rem,6vw,4.8rem)] font-black leading-[0.92] tracking-tighter">
+        <h1 className="skills-title mb-5 font-black leading-[0.92] tracking-tighter">
           VIBE CODE
           <br />
           <span className="font-serif font-normal italic text-[#7B61FF]">
             DEVELOPER
           </span>
         </h1>
-        <p className="mb-5 text-lg font-medium leading-snug tracking-tight opacity-60 md:text-xl">
+        <p className="mb-5 text-lg font-medium leading-snug tracking-tight opacity-60 md:text-2xl">
           Tools I use while building with AI.
         </p>
-        <p className="mx-auto max-w-xl text-sm font-medium leading-7 opacity-40 md:text-base">
+        <p className="mx-auto max-w-2xl text-sm font-medium leading-7 opacity-40 md:text-lg md:leading-8">
           I use these skills in vibe-code development, where AI helps generate the code and I guide the idea, design, prompts, fixes, and final output. I am still learning the deeper manual coding side, so this section shows practical usage and growth, not full expert-level mastery.
         </p>
       </div>
@@ -203,7 +203,9 @@ const FloatingGlassSkillsSection = () => {
             className="group pointer-events-auto absolute left-1/2 top-1/2"
             data-cursor-type="skill"
             data-cursor-text={skill.type}
-            style={{ transform: `translate(calc(-50% + ${skill.x}vw), calc(-50% + ${skill.y}vh))` }}
+            style={{
+              transform: `translate(calc(-50% + clamp(-34rem, ${skill.x}vw, 34rem)), calc(-50% + clamp(-21rem, ${skill.y}vh, 21rem)))`,
+            }}
           >
             <div
               className={`
@@ -219,7 +221,7 @@ const FloatingGlassSkillsSection = () => {
                 {skill.name}
               </span>
 
-              <span className="max-w-full rounded-full bg-black/6 px-2.5 py-1 text-[8px] font-black uppercase leading-none tracking-[0.18em] text-black/46 transition duration-300 group-hover:bg-black group-hover:text-white md:text-[9px]">
+              <span className="skill-level max-w-full rounded-full bg-black/6 px-2.5 py-1 font-black uppercase leading-none tracking-[0.18em] text-black/46 transition duration-300 group-hover:bg-black group-hover:text-white">
                 {skill.level}
               </span>
 

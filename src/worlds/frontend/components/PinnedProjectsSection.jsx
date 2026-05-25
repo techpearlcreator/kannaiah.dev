@@ -93,7 +93,7 @@ const PinnedProjectsSection = () => {
       <section className={`relative w-full ${isMobile ? 'h-auto overflow-visible' : 'h-screen overflow-hidden'}`}>
         {/* Navigation / Progress Sidebar */}
         {!isMobile && (
-          <div className="absolute top-1/2 left-8 -translate-y-1/2 z-50 flex flex-col gap-6">
+          <div className="projects-progress absolute top-1/2 -translate-y-1/2 z-50 flex flex-col gap-6">
             {projects.map((_, i) => (
               <div 
                 key={i} 
